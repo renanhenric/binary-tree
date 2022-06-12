@@ -1,29 +1,60 @@
-
-
+import java.util.Scanner;
 import java.util.LinkedList;
 
 public class Arvore {
   private No raiz; 
   
-    Arvore (){
-      raiz = null;
+  Arvore (){
+    raiz = null;
+  }
+
+public void setRaiz(No n){
+  this.raiz = n;
+}
+
+public int numeroNos(){
+  return numeroNos(raiz);
+}
+
+public int numeroNos (No n){
+  if (n == null) return 0;
+  return 1 + numeroNos(n.getEsq()) + numeroNos(n.getDir());
+}
+
+public int altura(){
+  return altura(raiz);
+}
+
+public int altura (No n){
+if(n == null ) return -1;
+  return 1 + Math.max(altura(n.getEsq()), altura(n.getDir()));
+}
+
+public boolean procura(int valor){
+  return procura(raiz, valor);
+}
+  
+private boolean procura(No n, int valor){
+  if (n == null) return false;
+  if (n.getValue() == valor) return true;
+  
+  return procura(n.getEsq(),valor) || procura(n.getDir(), valor);
+}
+
+  public boolean insert(int valor){
+    if (procura2(valor))return false;
+    raiz = insert(raiz, valor);
+    return true;
+  }
+
+  private No insert(No n, int valor){
+    if(n == null) return new No(valor, null, null);
+    if(n.getValue() < valor) n.setEsq(insert(n.getDir(), valor));
+    if(n.getValue() > valor) n.setDir(insert(n.getEsq(), valor));
+    return n;
     }
-
-    public void setRaiz(No n){
-      this.raiz = n;
-    }
-
-    public int altura(){
-      return altura(raiz);
-    }
-
-    public int altura (No n){
-    if(n == null ) return -1;
-      return 1 + Math.max(altura(n.getEsq()), altura(n.getDir()));
-    }
-
-
-    public void insertBFS(No NoAtual,LinkedList<Integer> insert ){ 
+  
+  public void insertBFS(No NoAtual,LinkedList<Integer> insert ){ 
       if(this.raiz == null ){
         this.raiz = new No(insert.getFirst(),null,null);
         NoAtual = this.raiz;                    
@@ -49,30 +80,78 @@ public class Arvore {
         }                      
     }
 
-    public void printPostOrder(){
-     System.out.print("PostOrder: ");
-     printPostOrder(raiz);
-     System.out.println();
+  private boolean remove(char valor){
+    if(! procura(valor)) return false;
+    raiz = remove(raiz, valor);
+   return true;
   }
 
-    public void printPostOrder(No n){
-     if(n == null) return;
-      printPostOrder(n.getEsq());
-      printPostOrder(n.getDir());
-      System.out.print(" " + n.getValue());
+  private No remove (No n, char valor){
+    if(valor < n.getValue())
+     n.setEsq(remove(n.getEsq(), valor));
+    else if(valor > n.getValue())
+      n.setDir(remove(n.getDir(), valor));
+    else if(n.getEsq() == null && n.getDir() == null) n = null;
+    else{
+      No max = n.getEsq();
+      while (max.getDir() != null) max = max.getDir();
+
+      n.setValue(max.getValue());
+      n.setDir(remove(n.getDir(), max.getValue()));
+    }
+    return n;
+  }
+  
+  public void printPreOrder(){
+    System.out.print("PreOrder: " );
+    printPreOrder (raiz);
+    System.out.println();
   }
 
-    public void printBFS(){
-      int altura = 0;
-      System.out.print("BFS: ");
-      printBFS(raiz, altura);
-      System.out.println();
+  private void printPreOrder(No n){
+    if(n == null) return;
+    System.out.print(" " + n.getValue());
+    printPreOrder(n.getEsq());
+    printPreOrder(n.getDir());
+  }
+
+  public void printInOrder(){
+    System.out.print("InOrder: ");
+    printInOrder(raiz);
+    System.out.println();
+  }
+
+  private void printInOrder(No n){
+    if(n == null) return;
+    printInOrder(n.getEsq());
+    System.out.print (" " + n.getValue());
+    printInOrder(n.getDir());
+  
+  }
+
+  public void printPosOrder(){
+    System.out.print("PosOrder: ");
+    printPosOrder(raiz);
+    System.out.println();
+  }
+
+  private void printPosOrder(No n){
+    if(n == null) return;
+    printInOrder(n.getEsq());
+    printInOrder(n.getDir());
+    System.out.println (" " + n.getValue());
+    }
+
+  public void printBFS(){
+    int altura = 0;
+    System.out.print("BFS: ");
+    printBFS(raiz, altura);
+    System.out.println();
   }
 
    private void printBFS(No n, int altura){
     LinkedList <No> lista = new LinkedList<>();  
-
-     // imprimindo a raiz e seus filhos caso não sejam null
+     
      System.out.print(n.getValue());
      if(n.getEsq() != null)
      lista.add(n.getEsq());      
@@ -80,14 +159,27 @@ public class Arvore {
      lista.add(n.getDir());
 
     while(! lista.isEmpty()){
-      No no = lista.removeFirst(); //pegando o primeiro valor da lista para imprimi-lo e o removendo
+      No no = lista.removeFirst();
       System.out.print(" " + no.getValue());
-      
-      //adicionando o no a esquerda e a direita na lista caso não sejam null
      if(n.getEsq() != null)
-       lista.add(no.getEsq());  
+       lista.add(no.getEsq());
       if(n.getDir() != null)
        lista.add(no.getDir());
       }
+    }
+
+    public static Arvore leitura(Scanner in){
+      Arvore a = new Arvore();
+      a.setRaiz(escritaArvore(in));
+      return a;
+    }
+
+    private static No escritaArvore(Scanner in){
+      String x = in.next();
+      if (x.equals("null")) return null;
+      int valor = Integer.parseInt(x);
+      No esquerdo = escritaArvore(in);
+      No direito = escritaArvore(in);
+      return new No(valor, esquerdo, direito);
     }
 }
